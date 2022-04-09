@@ -10,7 +10,9 @@ import { Base64 } from "./libraries/Base64.sol";
 
 contract DopeGoats is ERC721URIStorage {
 
-     event DopeGoatsMinted(address sender, uint256 tokenId);
+    mapping(uint => DopeGoatAttributes) internal goatAttributes;
+
+    event DopeGoatsMinted(address sender, uint256 tokenId);
 
     string svgPart1 = '<svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="350.000000pt" height="288.000000pt" viewBox="0 0 1280.000000 1052.000000" preserveAspectRatio="xMidYMid meet"><rect width="100%" height="100%" fill="';
     string svgPart2 = '"/><metadata>Created by potrace 1.15, written by Peter Selinger 2001-2017</metadata><g transform="translate(0.000000,1052.000000) scale(0.100000,-0.100000)" fill="';
@@ -24,6 +26,8 @@ contract DopeGoats is ERC721URIStorage {
         uint id;
         uint motherId;
         uint fatherId;
+        string background;
+        string colour;
 
     }
 
@@ -36,9 +40,33 @@ contract DopeGoats is ERC721URIStorage {
         require(msg.value >= 0.01 ether, "Not enough ETH sent: check price.");
 
         uint256 newItemId = _tokenIds.current();
-        string memory finalSvg = string(abi.encodePacked(svgPart1, background, svgPart2, goatColour, scgPart3));
-        console.log(finalSvg);
 
+        string memory finalTokenUri = generateURI(background, goatColour, isMale, newItemId);
+
+        console.log(finalTokenUri);
+
+        // Actually mint the NFT to the sender using msg.sender.
+        _safeMint(msg.sender, newItemId);
+
+        // Set the NFTs data.
+        _setTokenURI(newItemId, finalTokenUri);
+
+        // Increment the counter for when the next NFT is minted.
+        _tokenIds.increment();
+
+        //Log the NFT to the console.
+        console.log("An NFT w/ ID %s has been minted to %s", newItemId, msg.sender);
+
+        //Save Details
+        goatAttributes[newItemId] = DopeGoatAttributes(isMale, newItemId, 0, 0, background, goatColour);
+
+        //emit
+        emit DopeGoatsMinted(msg.sender, newItemId);
+
+    }
+
+    function generateURI(string memory background, string memory goatColour, bool isMale, uint256 id) internal view returns (string memory) {
+        string memory finalSvg = string(abi.encodePacked(svgPart1, background, svgPart2, goatColour, scgPart3));
         string memory gender;
         if (isMale) {
             gender = 'Male';
@@ -47,36 +75,34 @@ contract DopeGoats is ERC721URIStorage {
         }
 
         string memory json = Base64.encode(
-        bytes(
-            string(
-                abi.encodePacked(
-                    '{"name": "Dope Goat (',Strings.toString(newItemId),')", "description": "A Dope Goat.", "image": "data:image/svg+xml;base64,',
-                    Base64.encode(bytes(finalSvg)),'","attributes": [ {"trait_type": "Gender", "value": "',gender,'" }]}'
+            bytes(
+                string(
+                    abi.encodePacked(
+                        '{"name": "Dope Goat (',Strings.toString(id),')", "description": "A Dope Goat.", "image": "data:image/svg+xml;base64,',
+                        Base64.encode(bytes(finalSvg)),'","attributes": [ {"trait_type": "Gender", "value": "',gender,'" }]}'
+                    )
                 )
             )
-        )
-    );
+        );
 
-    string memory finalTokenUri = string(
-        abi.encodePacked("data:application/json;base64,", json)
-    );
-
-    console.log(finalTokenUri);
-
-     // Actually mint the NFT to the sender using msg.sender.
-    _safeMint(msg.sender, newItemId);
-
-    // Set the NFTs data.
-    _setTokenURI(newItemId, finalTokenUri);
-
-    // Increment the counter for when the next NFT is minted.
-    _tokenIds.increment();
-
-    //Log the NFT to the console.
-    console.log("An NFT w/ ID %s has been minted to %s", newItemId, msg.sender);
-
-    //emit
-    emit DopeGoatsMinted(msg.sender, newItemId);
-
+        string memory finalTokenUri = string(
+            abi.encodePacked("data:application/json;base64,", json)
+        );
+            
+        return finalTokenUri;
     }
+
+    function genderSwap(uint256 id) public payable  {
+        require (ownerOf(id) == msg.sender);
+        require(msg.value >= 0.01 ether, "Not enough MATIC sent: check price.");
+        if (goatAttributes[id].isMale) {
+            goatAttributes[id].isMale = false;
+        } else {
+            goatAttributes[id].isMale = true;
+        }
+
+        string memory finalTokenUri = generateURI(goatAttributes[id].background, goatAttributes[id].colour, goatAttributes[id].isMale, id);
+        _setTokenURI(id, finalTokenUri);
+    }
+
 }
