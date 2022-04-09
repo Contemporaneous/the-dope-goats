@@ -1,5 +1,7 @@
 require("@nomiclabs/hardhat-waffle");
 require("dotenv").config();
+require("@nomiclabs/hardhat-etherscan");
+
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
@@ -17,4 +19,7 @@ require("dotenv").config();
       accounts: [process.env.PRIVATE_KEY],
     },
   },
+  etherscan: {
+    apiKey: process.env.POLYSCAN_KEY,
+  }
 };
