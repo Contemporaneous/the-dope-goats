@@ -105,4 +105,42 @@ contract DopeGoats is ERC721URIStorage {
         emit DopeGoatUpdated(id);
     }
 
+    function giveBirth(uint256 id1, uint256 id2, bool isMale) public {
+        require (ownerOf(id1) == msg.sender);
+        require (ownerOf(id2) == msg.sender);
+
+        require(goatAttributes[id1].isMale != goatAttributes[id2].isMale, "Need mixed Gender couple");
+
+        uint256 motherId;
+        uint256 fatherId;
+
+        if (goatAttributes[id1].isMale) {
+            motherId = id2;
+            fatherId = id1;
+        } else {
+            motherId = id1;
+            fatherId = id2;
+        }
+
+        uint256 newItemId = _tokenIds.current();
+        string memory finalTokenUri = generateURI(goatAttributes[motherId].background, goatAttributes[fatherId].colour, isMale, newItemId);
+
+        _safeMint(msg.sender, newItemId);
+
+        // Set the NFTs data.
+        _setTokenURI(newItemId, finalTokenUri);
+
+        // Increment the counter for when the next NFT is minted.
+        _tokenIds.increment();
+
+        //Log the NFT to the console.
+        console.log("An NFT w/ ID %s has been minted to %s", newItemId, msg.sender);
+
+        //Save Details
+        goatAttributes[newItemId] = DopeGoatAttributes(isMale, newItemId, motherId, fatherId, goatAttributes[motherId].background, goatAttributes[fatherId].colour);
+
+        //emit
+        emit DopeGoatsMinted(msg.sender, newItemId);
+    }
+
 }
