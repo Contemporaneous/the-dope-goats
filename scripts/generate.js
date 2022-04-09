@@ -11,14 +11,11 @@ const main = async () => {
     let txn = await nftContract.makeDopeGoat("#44ee33","#ff8866",true,{ value: ethers.utils.parseEther("0.01") });
     await txn.wait()
 
-    let turi = await nftContract.tokenURI(1);
-    console.log(turi);
-
-    let gswap = await nftContract.genderSwap(1,{ value: ethers.utils.parseEther("0.01") });
-    await gswap.wait();
+    txn = await nftContract.makeDopeGoat("#ffffff","#000000",false,{ value: ethers.utils.parseEther("0.01") });
+    await txn.wait()
     
-    turi = await nftContract.tokenURI(1);
-    console.log(turi);
+    let birth = await nftContract.giveBirth(1,2,false);
+    await txn.wait();
   
   };
   

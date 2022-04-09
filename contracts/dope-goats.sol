@@ -24,12 +24,12 @@ contract DopeGoats is ERC721URIStorage {
 
     struct DopeGoatAttributes {
         bool isMale;
+        bool canBirth;
         uint id;
         uint motherId;
         uint fatherId;
         string background;
         string colour;
-
     }
 
     constructor() ERC721("Dope Goats Hprf", "DGHPRF") {
@@ -42,7 +42,7 @@ contract DopeGoats is ERC721URIStorage {
 
         uint256 newItemId = _tokenIds.current();
 
-        string memory finalTokenUri = generateURI(background, goatColour, isMale, newItemId);
+        string memory finalTokenUri = generateURI(background, goatColour, isMale, newItemId,true);
 
         // Actually mint the NFT to the sender using msg.sender.
         _safeMint(msg.sender, newItemId);
@@ -57,14 +57,14 @@ contract DopeGoats is ERC721URIStorage {
         console.log("An NFT w/ ID %s has been minted to %s", newItemId, msg.sender);
 
         //Save Details
-        goatAttributes[newItemId] = DopeGoatAttributes(isMale, newItemId, 0, 0, background, goatColour);
+        goatAttributes[newItemId] = DopeGoatAttributes(isMale, true, newItemId, 0, 0, background, goatColour);
 
         //emit
         emit DopeGoatsMinted(msg.sender, newItemId);
 
     }
 
-    function generateURI(string memory background, string memory goatColour, bool isMale, uint256 id) internal view returns (string memory) {
+    function generateURI(string memory background, string memory goatColour, bool isMale, uint256 id, bool canBirth) internal view returns (string memory) {
         string memory finalSvg = string(abi.encodePacked(svgPart1, background, svgPart2, goatColour, scgPart3));
         string memory gender;
         if (isMale) {
@@ -73,12 +73,19 @@ contract DopeGoats is ERC721URIStorage {
             gender = 'Female';
         }
 
+        string memory birth;
+        if (canBirth) {
+            birth = "Can Birth";
+        } else {
+            birth = "Baron";
+        }
+
         string memory json = Base64.encode(
             bytes(
                 string(
                     abi.encodePacked(
                         '{"name": "Dope Goat (',Strings.toString(id),')", "description": "A Dope Goat.", "image": "data:image/svg+xml;base64,',
-                        Base64.encode(bytes(finalSvg)),'","attributes": [ {"trait_type": "Gender", "value": "',gender,'" }]}'
+                        Base64.encode(bytes(finalSvg)),'","attributes": [ {"trait_type": "Gender", "value": "',gender,'" },{"trait_type": "CanBirth", "value": "',birth,'" }]}'
                     )
                 )
             )
@@ -87,6 +94,7 @@ contract DopeGoats is ERC721URIStorage {
         string memory finalTokenUri = string(
             abi.encodePacked("data:application/json;base64,", json)
         );
+        console.log("URI: %s", finalTokenUri);
             
         return finalTokenUri;
     }
@@ -100,7 +108,7 @@ contract DopeGoats is ERC721URIStorage {
             goatAttributes[id].isMale = true;
         }
 
-        string memory finalTokenUri = generateURI(goatAttributes[id].background, goatAttributes[id].colour, goatAttributes[id].isMale, id);
+        string memory finalTokenUri = generateURI(goatAttributes[id].background, goatAttributes[id].colour, goatAttributes[id].isMale, id, goatAttributes[id].canBirth);
         _setTokenURI(id, finalTokenUri);
         emit DopeGoatUpdated(id);
     }
@@ -110,6 +118,8 @@ contract DopeGoats is ERC721URIStorage {
         require (ownerOf(id2) == msg.sender);
 
         require(goatAttributes[id1].isMale != goatAttributes[id2].isMale, "Need mixed Gender couple");
+        require(goatAttributes[id1].canBirth, "Needs To be able to Birth");
+        require(goatAttributes[id2].canBirth, "Needs To be able to Birth");
 
         uint256 motherId;
         uint256 fatherId;
@@ -123,7 +133,7 @@ contract DopeGoats is ERC721URIStorage {
         }
 
         uint256 newItemId = _tokenIds.current();
-        string memory finalTokenUri = generateURI(goatAttributes[motherId].background, goatAttributes[fatherId].colour, isMale, newItemId);
+        string memory finalTokenUri = generateURI(goatAttributes[motherId].background, goatAttributes[fatherId].colour, isMale, newItemId, true);
 
         _safeMint(msg.sender, newItemId);
 
@@ -137,10 +147,21 @@ contract DopeGoats is ERC721URIStorage {
         console.log("An NFT w/ ID %s has been minted to %s", newItemId, msg.sender);
 
         //Save Details
-        goatAttributes[newItemId] = DopeGoatAttributes(isMale, newItemId, motherId, fatherId, goatAttributes[motherId].background, goatAttributes[fatherId].colour);
+        goatAttributes[newItemId] = DopeGoatAttributes(isMale, true,newItemId, motherId, fatherId, goatAttributes[motherId].background, goatAttributes[fatherId].colour);
 
         //emit
         emit DopeGoatsMinted(msg.sender, newItemId);
+        updateBirthDetails(id1);
+        updateBirthDetails(id2);
+    }
+
+    function updateBirthDetails(uint256 id) internal {
+        require (ownerOf(id) == msg.sender);
+        goatAttributes[id].canBirth = false;
+
+        string memory finalTokenUri = generateURI(goatAttributes[id].background, goatAttributes[id].colour, goatAttributes[id].isMale, id, false);
+        _setTokenURI(id, finalTokenUri);
+        emit DopeGoatUpdated(id);
     }
 
 }
