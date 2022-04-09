@@ -31,19 +31,26 @@ contract DopeGoats is ERC721URIStorage {
         console.log("The Dope Goats Are Born");
     }
 
-    function makeDopeGoat(string memory background, string memory goatColour) public payable {
+    function makeDopeGoat(string memory background, string memory goatColour, bool isMale) public payable {
         require(msg.value >= 0.01 ether, "Not enough ETH sent: check price.");
 
         uint256 newItemId = _tokenIds.current();
         string memory finalSvg = string(abi.encodePacked(svgPart1, background, svgPart2, goatColour, scgPart3));
+        console.log(finalSvg);
+
+        string memory gender;
+        if (isMale) {
+            gender = 'Male';
+        } else {
+            gender = 'Female';
+        }
 
         string memory json = Base64.encode(
         bytes(
             string(
                 abi.encodePacked(
-                    '{"description": "A Dope Goat.", "image": "data:image/svg+xml;base64,',
-                    Base64.encode(bytes(finalSvg)),
-                    '"}'
+                    '{"name": "Dope Goat #',Strings.toString(newItemId),'", "description": "A Dope Goat.", "image": "data:image/svg+xml;base64,',
+                    Base64.encode(bytes(finalSvg)),'","attributes": [ {"trait_type": "Gender", "value": "',gender,'" }]}'
                 )
             )
         )
@@ -52,6 +59,8 @@ contract DopeGoats is ERC721URIStorage {
     string memory finalTokenUri = string(
         abi.encodePacked("data:application/json;base64,", json)
     );
+
+    console.log(finalTokenUri);
 
      // Actually mint the NFT to the sender using msg.sender.
     _safeMint(msg.sender, newItemId);

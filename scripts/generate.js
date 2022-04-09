@@ -8,7 +8,7 @@ const main = async () => {
     await nftContract.deployed();
     console.log("Contract deployed to:", nftContract.address);
   
-    let txn = await nftContract.makeDopeGoat("#44ee33","#ff8866",{ value: ethers.utils.parseEther("0.01") });
+    let txn = await nftContract.makeDopeGoat("#44ee33","#ff8866",true,{ value: ethers.utils.parseEther("0.01") });
     await txn.wait()
   
   };
