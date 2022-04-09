@@ -13,6 +13,7 @@ contract DopeGoats is ERC721URIStorage {
     mapping(uint => DopeGoatAttributes) internal goatAttributes;
 
     event DopeGoatsMinted(address sender, uint256 tokenId);
+    event DopeGoatUpdated(uint256 tokenId);
 
     string svgPart1 = '<svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="350.000000pt" height="288.000000pt" viewBox="0 0 1280.000000 1052.000000" preserveAspectRatio="xMidYMid meet"><rect width="100%" height="100%" fill="';
     string svgPart2 = '"/><metadata>Created by potrace 1.15, written by Peter Selinger 2001-2017</metadata><g transform="translate(0.000000,1052.000000) scale(0.100000,-0.100000)" fill="';
@@ -42,8 +43,6 @@ contract DopeGoats is ERC721URIStorage {
         uint256 newItemId = _tokenIds.current();
 
         string memory finalTokenUri = generateURI(background, goatColour, isMale, newItemId);
-
-        console.log(finalTokenUri);
 
         // Actually mint the NFT to the sender using msg.sender.
         _safeMint(msg.sender, newItemId);
@@ -103,6 +102,7 @@ contract DopeGoats is ERC721URIStorage {
 
         string memory finalTokenUri = generateURI(goatAttributes[id].background, goatAttributes[id].colour, goatAttributes[id].isMale, id);
         _setTokenURI(id, finalTokenUri);
+        emit DopeGoatUpdated(id);
     }
 
 }
