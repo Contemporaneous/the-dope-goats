@@ -42,13 +42,8 @@ contract DopeGoats is ERC721URIStorage {
 
         uint256 newItemId = _tokenIds.current();
 
-        string memory finalTokenUri = generateURI(background, goatColour, isMale, newItemId,true);
-
         // Actually mint the NFT to the sender using msg.sender.
         _safeMint(msg.sender, newItemId);
-
-        // Set the NFTs data.
-        _setTokenURI(newItemId, finalTokenUri);
 
         // Increment the counter for when the next NFT is minted.
         _tokenIds.increment();
@@ -94,7 +89,6 @@ contract DopeGoats is ERC721URIStorage {
         string memory finalTokenUri = string(
             abi.encodePacked("data:application/json;base64,", json)
         );
-        console.log("URI: %s", finalTokenUri);
             
         return finalTokenUri;
     }
@@ -108,8 +102,6 @@ contract DopeGoats is ERC721URIStorage {
             goatAttributes[id].isMale = true;
         }
 
-        string memory finalTokenUri = generateURI(goatAttributes[id].background, goatAttributes[id].colour, goatAttributes[id].isMale, id, goatAttributes[id].canBirth);
-        _setTokenURI(id, finalTokenUri);
         emit DopeGoatUpdated(id);
     }
 
@@ -133,12 +125,9 @@ contract DopeGoats is ERC721URIStorage {
         }
 
         uint256 newItemId = _tokenIds.current();
-        string memory finalTokenUri = generateURI(goatAttributes[motherId].background, goatAttributes[fatherId].colour, isMale, newItemId, true);
+        //string memory finalTokenUri = generateURI(goatAttributes[motherId].background, goatAttributes[fatherId].colour, isMale, newItemId, true);
 
         _safeMint(msg.sender, newItemId);
-
-        // Set the NFTs data.
-        _setTokenURI(newItemId, finalTokenUri);
 
         // Increment the counter for when the next NFT is minted.
         _tokenIds.increment();
@@ -162,6 +151,10 @@ contract DopeGoats is ERC721URIStorage {
         string memory finalTokenUri = generateURI(goatAttributes[id].background, goatAttributes[id].colour, goatAttributes[id].isMale, id, false);
         _setTokenURI(id, finalTokenUri);
         emit DopeGoatUpdated(id);
+    }
+
+    function tokenURI(uint256 _tokenId) public view override returns (string memory) { 
+        return generateURI(goatAttributes[_tokenId].background, goatAttributes[_tokenId].colour, goatAttributes[_tokenId].isMale, _tokenId, goatAttributes[_tokenId].canBirth);
     }
 
 }

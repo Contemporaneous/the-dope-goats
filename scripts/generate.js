@@ -16,6 +16,10 @@ const main = async () => {
     
     let birth = await nftContract.giveBirth(1,2,false);
     await txn.wait();
+
+    let uri = await nftContract.tokenURI(1);
+    console.log(uri);
+    
   
   };
   
