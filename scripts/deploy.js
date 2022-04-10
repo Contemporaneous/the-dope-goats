@@ -14,8 +14,6 @@ const main = async () => {
     txn = await nftContract.makeDopeGoat("#33dd5e","#6688bb",false,{ value: ethers.utils.parseEther("0.01") });
     await txn.wait()
 
-    // txn = await nftContract.makeDopeGoat("#55ffee","#5522ff",true,{ value: ethers.utils.parseEther("0.01") });
-    // await txn.wait()
   
   };
   
