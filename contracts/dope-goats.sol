@@ -140,17 +140,12 @@ contract DopeGoats is ERC721URIStorage {
 
         //emit
         emit DopeGoatsMinted(msg.sender, newItemId);
-        updateBirthDetails(id1);
-        updateBirthDetails(id2);
-    }
-
-    function updateBirthDetails(uint256 id) internal {
-        require (ownerOf(id) == msg.sender);
-        goatAttributes[id].canBirth = false;
-
-        string memory finalTokenUri = generateURI(goatAttributes[id].background, goatAttributes[id].colour, goatAttributes[id].isMale, id, false);
-        _setTokenURI(id, finalTokenUri);
-        emit DopeGoatUpdated(id);
+        
+        goatAttributes[motherId].canBirth = false;
+        emit DopeGoatUpdated(motherId);
+        
+        goatAttributes[fatherId].canBirth = false;
+        emit DopeGoatUpdated(fatherId);
     }
 
     function tokenURI(uint256 _tokenId) public view override returns (string memory) { 
